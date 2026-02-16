@@ -147,15 +147,13 @@ function wrapXml(frequency: string, start: string, end: string | null, intervals
   const endAttr = end ? ` end="${escapeXmlAttr(end)}"` : "";
 
   return `<tsRequest>
-  <extractRefresh>
-    <schedule frequency="${escapeXmlAttr(frequency)}">
-      <frequencyDetails start="${escapeXmlAttr(start)}"${endAttr}>
-        <intervals>
-          ${intervals}
-        </intervals>
-      </frequencyDetails>
-    </schedule>
-  </extractRefresh>
+  <schedule frequency="${escapeXmlAttr(frequency)}">
+    <frequencyDetails start="${escapeXmlAttr(start)}"${endAttr}>
+      <intervals>
+        ${intervals}
+      </intervals>
+    </frequencyDetails>
+  </schedule>
 </tsRequest>`;
 }
 
