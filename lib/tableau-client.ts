@@ -393,7 +393,7 @@ export class TableauClient {
   ): Promise<{ success: boolean; message?: string; error?: string; statusCode?: number }> {
     const result = await this.makeWriteRequest(
       `tasks/extractRefreshes/${taskId}`,
-      "PUT",
+      "POST",
       xmlPayload,
     );
 
