@@ -12,6 +12,14 @@
 
 # testing
 /coverage
+/__tests__
+vitest.config.ts
+vitest.setup.ts
+
+# non-build files
+*.md
+*.html
+/pic
 
 # next.js
 /.next/
