@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refresh Manager Plan Instructions</title>
+    <style>
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+                font-size: 16px;
+                line-height: 1.6;
+                color: #1e293b;
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 40px 20px;
+                background: #ffffff;
+            }
+            .note-content {
+                width: 100%;
+            }
+            /* Headings */
+            h1 { font-size: 2em; font-weight: 700; margin: 0.67em 0; }
+            h2 { font-size: 1.5em; font-weight: 600; margin: 0.75em 0; }
+            h3 { font-size: 1.25em; font-weight: 600; margin: 0.75em 0; }
+            h4 { font-size: 1.1em; font-weight: 600; margin: 0.75em 0; }
+            h5 { font-size: 1em; font-weight: 600; margin: 0.75em 0; }
+            h6 { font-size: 0.9em; font-weight: 600; margin: 0.75em 0; }
+            
+            /* Paragraphs and text */
+            p { margin: 0 0 1em 0; }
+            
+            /* Lists */
+            ul, ol { 
+                margin: 0.5em 0 1em 0; 
+                padding-left: 1.5em;
+            }
+            li { margin: 0.25em 0; }
+            ul ul, ol ol, ul ol, ol ul {
+                margin: 0.25em 0;
+            }
+            
+            /* Blockquote */
+            blockquote {
+                margin: 1em 0;
+                padding: 12px 20px;
+                border-left: 4px solid #3b82f6;
+                background: #f8fafc;
+                font-style: italic;
+                color: #475569;
+            }
+            
+            /* Code */
+            pre {
+                background: #1e293b;
+                color: #e2e8f0;
+                padding: 16px;
+                border-radius: 8px;
+                overflow-x: auto;
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                font-size: 14px;
+                line-height: 1.5;
+                margin: 1em 0;
+            }
+            code {
+                background: #f1f5f9;
+                color: #e11d48;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+                font-size: 0.9em;
+            }
+            pre code {
+                background: transparent;
+                color: inherit;
+                padding: 0;
+            }
+            
+            /* Tables */
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 1em 0;
+            }
+            th, td {
+                border: 0.5px solid #000000;
+                padding: 10px 14px;
+                text-align: left;
+            }
+            th {
+                background: #f8fafc;
+                font-weight: 600;
+            }
+            
+            /* Images */
+            img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 4px;
+            }
+            
+            /* Image alignment */
+            img[data-align="left"], figure[data-align="left"] {
+                margin-left: 0;
+                margin-right: auto;
+            }
+            img[data-align="center"], figure[data-align="center"] {
+                margin-left: auto;
+                margin-right: auto;
+            }
+            img[data-align="right"], figure[data-align="right"] {
+                margin-left: auto;
+                margin-right: 0;
+            }
+            figure[data-align="center"] {
+                text-align: center;
+            }
+            figure[data-align="left"] {
+                text-align: left;
+            }
+            figure[data-align="right"] {
+                text-align: right;
+            }
+            
+            /* Image captions */
+            figcaption {
+                text-align: center !important;
+                font-size: 0.875rem;
+                color: #64748b;
+                font-style: italic;
+                margin-top: 0.5em;
+            }
+            
+            /* Links */
+            a {
+                color: #3b82f6;
+                text-decoration: underline;
+            }
+            a:hover {
+                color: #1d4ed8;
+            }
+            
+            /* Horizontal rule */
+            hr {
+                border: none;
+                border-top: 2px solid #e2e8f0;
+                margin: 2em 0;
+            }
+            
+            /* Text formatting - ensure inline styles take precedence */
+            [style] {
+                /* Inline styles preserved */
+            }
+            
+            /* Subscript and superscript */
+            sub { vertical-align: sub; font-size: 0.75em; }
+            sup { vertical-align: super; font-size: 0.75em; }
+            
+            /* Strikethrough */
+            s, strike, del { text-decoration: line-through; }
+            
+            /* Underline */
+            u, ins { text-decoration: underline; }
+            
+            /* Highlight/mark */
+            mark {
+                background-color: #fef08a;
+                padding: 0 2px;
+            }
+        </style>
+</head>
+<body>
+    <div class="note-content"><p><!--StartFragment--></p><p>Both files are ready in <code>tableau-refresh-manager/</code>:</p><p><strong>IMPLEMENTATION_PLAN.md</strong> — The full spec any agent can pick up cold:</p><ul><li>Context section explaining what this is, why we're building it, and what exists to reference</li><li>Tech stack, project structure, and complete TypeScript interfaces (the shared contract)</li><li>Detailed component design for all ~15 components with behavioral specs</li><li>API routes with request/response shapes and implementation logic</li><li>10 build phases with&nbsp;<strong>checkbox checklists</strong>&nbsp;(<code>- [ ]</code>) for auditing progress</li><li>End-to-end verification checklist</li></ul><p><strong>AGENT_TEAMS_STRATEGY.md</strong> — Standalone agent teams guide:</p><ul><li>Setup instructions for Windows</li><li>Ready-to-use spawn prompts for each phase with exact file ownership tables</li><li>Coordination points (who messages whom, what contracts to share first)</li><li>Best practices (types file first, pre-install shadcn, one teammate per file tree)</li><li>Phase-by-phase map: when to use teams (Phases 3-6 and 7-8) vs single agent (Phases 1-2 and 9-10)</li></ul><p><strong>Usage guidance:</strong></p><ul><li>For single-agent work (Phases 1-2 and 9-10), <strong>IMPLEMENTATION_PLAN.md</strong> alone is sufficient.</li><li>For team work (Phases 3-6 and 7-8), provide <strong>both files</strong>: <code>IMPLEMENTATION_PLAN.md</code> and <code>AGENT_TEAMS_STRATEGY.md</code>.</li><li>Use the checklists in <code>IMPLEMENTATION_PLAN.md</code> as the progress audit trail and check items off as completed.</li></ul><!--EndFragment--><p><br></p></div>
+</body>
+</html>
