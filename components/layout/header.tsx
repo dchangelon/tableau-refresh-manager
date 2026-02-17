@@ -5,7 +5,7 @@ import { useRefreshData } from "@/hooks/use-refresh-data";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function Header() {
-  const { data, isLoading, error } = useRefreshData();
+  const { data, isLoading, error, dataUpdatedAt } = useRefreshData();
   const queryClient = useQueryClient();
 
   const handleRefresh = () => {
@@ -50,7 +50,13 @@ export function Header() {
             </div>
           </div>
 
-          {/* Refresh Button */}
+          {/* Refresh Button + Last Updated */}
+          <div className="flex items-center gap-3">
+          {dataUpdatedAt > 0 && (
+            <span className="text-xs text-gray-400">
+              Last refresh: {new Date(dataUpdatedAt).toLocaleTimeString()}
+            </span>
+          )}
           <Button
             onClick={handleRefresh}
             variant="outline"
@@ -72,6 +78,7 @@ export function Header() {
             </svg>
             Refresh
           </Button>
+          </div>
         </div>
       </div>
     </header>
