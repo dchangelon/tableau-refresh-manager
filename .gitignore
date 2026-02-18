@@ -12,14 +12,21 @@
 
 # testing
 /coverage
-/__tests__
-vitest.config.ts
-vitest.setup.ts
 
 # non-build files
-*.md
-*.html
 /pic
+
+# Accidental duplicate directories
+app/app/
+public/public/
+*.html
+
+# Internal development files (keep README.md)
+IMPLEMENTATION_PLAN.md
+PHASE*.md
+REFACTORING_SUMMARY.md
+AGENT_TEAMS_STRATEGY.md
+RETRO.md
 
 # next.js
 /.next/
