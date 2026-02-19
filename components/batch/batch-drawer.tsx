@@ -9,8 +9,34 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronUp, ChevronDown, Trash2, CalendarSync, X, Maximize2, Minimize2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ChevronUp, ChevronDown, Trash2, CalendarSync, X, Maximize2, Minimize2, ArrowUpDown } from "lucide-react";
 import { useState, useEffect, useCallback, useMemo } from "react";
+import type { BatchPlanItem } from "@/lib/types";
+
+type SortKey = "insertion" | "name" | "folder" | "type" | "frequency" | "changed";
+
+const SORT_LABELS: Record<SortKey, string> = {
+  insertion: "Default Order",
+  name: "Name (A-Z)",
+  folder: "Folder (A-Z)",
+  type: "Type (WB/DS)",
+  frequency: "Frequency",
+  changed: "Changed First",
+};
+
+const FREQUENCY_ORDER: Record<string, number> = {
+  Hourly: 0,
+  Daily: 1,
+  Weekly: 2,
+  Monthly: 3,
+};
 
 export function BatchDrawer() {
   const items = useBatchStore((s) => s.items);
@@ -23,6 +49,7 @@ export function BatchDrawer() {
   const [setAllOpen, setSetAllOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [setAllTargetIds, setSetAllTargetIds] = useState<Set<string> | undefined>(undefined);
+  const [sortKey, setSortKey] = useState<SortKey>("insertion");
 
   // Maximize/restore state with localStorage persistence
   const [isMaximized, setIsMaximized] = useState(() => {
@@ -99,6 +126,37 @@ export function BatchDrawer() {
     setSelectedIds(new Set());
   }, [selectedIds, removeItem]);
 
+  // Sorted items computation
+  const sortedItems = useMemo(() => {
+    if (sortKey === "insertion") return items;
+
+    const compare = (a: BatchPlanItem, b: BatchPlanItem): number => {
+      switch (sortKey) {
+        case "name":
+          return a.taskName.localeCompare(b.taskName);
+        case "folder":
+          return a.projectName.localeCompare(b.projectName) || a.taskName.localeCompare(b.taskName);
+        case "type": {
+          const typeOrder = (t: string) => (t === "workbook" ? 0 : 1);
+          return typeOrder(a.itemType) - typeOrder(b.itemType) || a.taskName.localeCompare(b.taskName);
+        }
+        case "frequency":
+          return (FREQUENCY_ORDER[a.currentSchedule.frequency] ?? 99) -
+                 (FREQUENCY_ORDER[b.currentSchedule.frequency] ?? 99) ||
+                 a.taskName.localeCompare(b.taskName);
+        case "changed": {
+          const aChanged = JSON.stringify(a.currentSchedule) !== JSON.stringify(a.newSchedule) ? 0 : 1;
+          const bChanged = JSON.stringify(b.currentSchedule) !== JSON.stringify(b.newSchedule) ? 0 : 1;
+          return aChanged - bChanged || a.taskName.localeCompare(b.taskName);
+        }
+        default:
+          return 0;
+      }
+    };
+
+    return [...items].sort(compare);
+  }, [items, sortKey]);
+
   if (items.length === 0) return null;
 
   return (
@@ -166,7 +224,7 @@ export function BatchDrawer() {
                     />
                     <span className="text-gray-600 select-none">Select All</span>
                   </label>
-                  {selectedCount > 0 && (
+                  {selectedCount > 0 ? (
                     <>
                       <span className="text-xs text-gray-500">
                         {selectedCount} of {items.length} selected
@@ -195,12 +253,28 @@ export function BatchDrawer() {
                         </Button>
                       </div>
                     </>
+                  ) : (
+                    <div className="ml-auto flex items-center gap-1.5">
+                      <ArrowUpDown className="size-3 text-gray-400" />
+                      <Select value={sortKey} onValueChange={(val) => setSortKey(val as SortKey)}>
+                        <SelectTrigger size="sm" className="h-7 text-xs w-[140px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(Object.entries(SORT_LABELS) as [SortKey, string][]).map(([key, label]) => (
+                            <SelectItem key={key} value={key}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   )}
                 </div>
 
                 <ScrollArea className="flex-1 min-h-0 p-4">
                   <div className="space-y-2">
-                    {items.map((item) => (
+                    {sortedItems.map((item) => (
                       <BatchItem
                         key={item.id}
                         item={item}

@@ -37,6 +37,7 @@ const mockItem: BatchPlanItem = {
   id: "batch-1",
   taskId: "task-1",
   taskName: "Test Workbook Refresh",
+  projectName: "Marketing",
   itemType: "workbook",
   currentSchedule: mockSchedule,
   newSchedule: mockSchedule,
@@ -49,6 +50,7 @@ const mockItem2: BatchPlanItem = {
   id: "batch-2",
   taskId: "task-2",
   taskName: "Test Datasource Refresh",
+  projectName: "Sales Analytics",
   itemType: "datasource",
   currentSchedule: mockSchedule,
   newSchedule: {

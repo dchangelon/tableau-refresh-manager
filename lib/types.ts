@@ -37,6 +37,7 @@ export interface BatchPlanItem {
   id: string; // Client-generated UUID
   taskId: string;
   taskName: string;
+  projectName: string;
   itemType: "workbook" | "datasource";
   currentSchedule: ScheduleConfig;
   newSchedule: ScheduleConfig; // Any field can change

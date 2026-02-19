@@ -65,6 +65,9 @@ export function BatchItem({ item, selected, onToggleSelect, onRemove, onUpdateSc
             {item.itemType === "workbook" ? "WB" : "DS"}
           </Badge>
           <span className="font-medium text-sm truncate">{item.taskName}</span>
+          {item.projectName && (
+            <span className="text-xs text-gray-400 truncate hidden sm:inline">{item.projectName}</span>
+          )}
         </div>
         <div className="flex items-center gap-1 shrink-0">
           <Button

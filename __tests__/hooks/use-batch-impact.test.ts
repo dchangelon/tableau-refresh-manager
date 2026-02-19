@@ -44,6 +44,7 @@ function makeBatchItem(overrides: Partial<BatchPlanItem> = {}): BatchPlanItem {
     id: "item-1",
     taskId: "task-1",
     taskName: "Test Workbook",
+    projectName: "Default Project",
     itemType: "workbook",
     currentSchedule: {
       frequency: "Daily",

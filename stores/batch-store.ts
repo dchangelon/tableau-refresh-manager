@@ -27,6 +27,7 @@ export const useBatchStore = create<BatchState>((set, get) => ({
       id: crypto.randomUUID(),
       taskId: task.id,
       taskName: task.itemName,
+      projectName: task.projectName,
       itemType: task.type,
       currentSchedule: { ...task.schedule },
       newSchedule: { ...task.schedule },
