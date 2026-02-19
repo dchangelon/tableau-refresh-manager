@@ -4,7 +4,7 @@ import type { ScheduleConfig } from "@/lib/types";
 
 describe("buildScheduleXml", () => {
   describe("Hourly frequency", () => {
-    it("builds XML for hourly schedule with all days", () => {
+    it("builds XML for hourly schedule with all days (empty weekDays sends all 7)", () => {
       const schedule: ScheduleConfig = {
         frequency: "Hourly",
         startTime: "07:00",
@@ -21,7 +21,10 @@ describe("buildScheduleXml", () => {
       expect(xml).toContain('<schedule frequency="Hourly">');
       expect(xml).toContain('start="07:00:00" end="22:00:00"');
       expect(xml).toContain('<interval hours="1" />');
-      expect(xml).not.toContain('weekDay');
+      // Empty weekDays now sends all 7 days explicitly per Tableau API requirement
+      expect(xml).toContain('<interval weekDay="Sunday" />');
+      expect(xml).toContain('<interval weekDay="Monday" />');
+      expect(xml).toContain('<interval weekDay="Saturday" />');
     });
 
     it("builds XML for hourly schedule with specific weekdays", () => {
@@ -76,7 +79,7 @@ describe("buildScheduleXml", () => {
   });
 
   describe("Daily frequency", () => {
-    it("builds XML for daily every 24h (all days)", () => {
+    it("builds XML for daily every 24h (all days — sends all 7 weekDays)", () => {
       const schedule: ScheduleConfig = {
         frequency: "Daily",
         startTime: "08:00",
@@ -94,6 +97,9 @@ describe("buildScheduleXml", () => {
       expect(xml).toContain('start="08:00:00"');
       expect(xml).not.toContain('end=');
       expect(xml).toContain('<interval hours="24" />');
+      // Empty weekDays now sends all 7 days explicitly per Tableau API requirement
+      expect(xml).toContain('<interval weekDay="Sunday" />');
+      expect(xml).toContain('<interval weekDay="Saturday" />');
     });
 
     it("builds XML for daily every 4h with end time and weekdays", () => {
@@ -144,6 +150,37 @@ describe("buildScheduleXml", () => {
       };
 
       expect(() => buildScheduleXml(schedule)).toThrow("Daily frequency with intervalHours=4 requires endTime");
+    });
+
+    it("rejects daily with mismatched start/end minutes", () => {
+      const schedule: ScheduleConfig = {
+        frequency: "Daily",
+        startTime: "08:30",
+        endTime: "22:00",
+        intervalHours: 4,
+        weekDays: [],
+        monthDays: [],
+        monthlyOrdinal: null,
+        monthlyWeekDay: null,
+      };
+
+      expect(() => buildScheduleXml(schedule)).toThrow("startTime and endTime must have matching minutes");
+    });
+
+    it("accepts daily with matching start/end minutes", () => {
+      const schedule: ScheduleConfig = {
+        frequency: "Daily",
+        startTime: "08:30",
+        endTime: "22:30",
+        intervalHours: 4,
+        weekDays: ["Monday"],
+        monthDays: [],
+        monthlyOrdinal: null,
+        monthlyWeekDay: null,
+      };
+
+      const xml = buildScheduleXml(schedule);
+      expect(xml).toContain('start="08:30:00" end="22:30:00"');
     });
   });
 

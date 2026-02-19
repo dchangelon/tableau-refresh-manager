@@ -31,6 +31,7 @@ export function BatchItem({ item, selected, onToggleSelect, onRemove, onUpdateSc
     item.currentSchedule.startTime,
     item.currentSchedule.intervalHours,
     item.currentSchedule.weekDays,
+    item.currentSchedule.endTime,
   );
 
   const newSummary = formatScheduleSummary(
@@ -38,6 +39,7 @@ export function BatchItem({ item, selected, onToggleSelect, onRemove, onUpdateSc
     item.newSchedule.startTime,
     item.newSchedule.intervalHours,
     item.newSchedule.weekDays,
+    item.newSchedule.endTime,
   );
 
   return (

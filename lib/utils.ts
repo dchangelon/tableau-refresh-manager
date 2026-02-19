@@ -137,21 +137,32 @@ export function computeRunHours(schedule: ScheduleConfig): number[] {
 }
 
 /**
- * Format a schedule config into a human-readable string.
+ * Format a schedule config into a human-readable string with full detail.
  */
 export function formatScheduleSummary(
   frequency: string,
   startTime: string,
   intervalHours?: number | null,
   weekDays?: string[],
+  endTime?: string | null,
 ): string {
   const timeLabel = formatHour(parseTime(startTime).hour);
+  const daysLabel = weekDays && weekDays.length > 0 && weekDays.length < 7
+    ? ` ${weekDays.map((d) => d.slice(0, 3)).join(", ")}`
+    : "";
+
   switch (frequency) {
-    case "Hourly":
-      return `Hourly (${timeLabel} window)`;
-    case "Daily":
-      if (!intervalHours || intervalHours === 24) return `Daily at ${timeLabel}`;
-      return `Every ${intervalHours}h from ${timeLabel}`;
+    case "Hourly": {
+      const endLabel = endTime ? ` – ${formatHour(parseTime(endTime).hour)}` : "";
+      return `Hourly ${timeLabel}${endLabel}${daysLabel}`;
+    }
+    case "Daily": {
+      if (!intervalHours || intervalHours === 24) {
+        return `Daily at ${timeLabel}${daysLabel}`;
+      }
+      const endLabel = endTime ? ` – ${formatHour(parseTime(endTime).hour)}` : "";
+      return `Every ${intervalHours}h ${timeLabel}${endLabel}${daysLabel}`;
+    }
     case "Weekly": {
       const days = weekDays?.map((d) => d.slice(0, 3)).join(", ") ?? "";
       return `Weekly ${days} at ${timeLabel}`;

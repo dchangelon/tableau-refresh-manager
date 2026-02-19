@@ -10,6 +10,8 @@
 
 import type { ScheduleConfig } from "@/lib/types";
 
+const ALL_WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
 /**
  * Escape a string for safe use in an XML attribute value.
  */
@@ -69,12 +71,12 @@ export function buildScheduleXml(schedule: ScheduleConfig): string {
 function buildHourlyIntervals(intervalHours: number, weekDays: string[]): string {
   const hourInterval = `<interval hours="${intervalHours}" />`;
 
-  if (!weekDays || weekDays.length === 0) {
-    // All days
-    return hourInterval;
-  }
+  // Tableau requires at least one weekDay interval for Hourly/Daily.
+  // Empty array means "all days" — send all 7 explicitly.
+  const effectiveDays =
+    !weekDays || weekDays.length === 0 ? ALL_WEEKDAYS : weekDays;
 
-  const weekDayIntervals = weekDays.map((day) => `<interval weekDay="${escapeXmlAttr(day)}" />`).join("\n      ");
+  const weekDayIntervals = effectiveDays.map((day) => `<interval weekDay="${escapeXmlAttr(day)}" />`).join("\n      ");
   return `${hourInterval}\n      ${weekDayIntervals}`;
 }
 
@@ -86,12 +88,12 @@ function buildHourlyIntervals(intervalHours: number, weekDays: string[]): string
 function buildDailyIntervals(intervalHours: number, weekDays: string[]): string {
   const hourInterval = `<interval hours="${intervalHours}" />`;
 
-  if (!weekDays || weekDays.length === 0) {
-    // All days
-    return hourInterval;
-  }
+  // Tableau requires at least one weekDay interval for Hourly/Daily.
+  // Empty array means "all days" — send all 7 explicitly.
+  const effectiveDays =
+    !weekDays || weekDays.length === 0 ? ALL_WEEKDAYS : weekDays;
 
-  const weekDayIntervals = weekDays.map((day) => `<interval weekDay="${escapeXmlAttr(day)}" />`).join("\n      ");
+  const weekDayIntervals = effectiveDays.map((day) => `<interval weekDay="${escapeXmlAttr(day)}" />`).join("\n      ");
   return `${hourInterval}\n      ${weekDayIntervals}`;
 }
 
@@ -169,6 +171,20 @@ function ensureTimeFormat(time: string): string {
 }
 
 /**
+ * Tableau requires startTime and endTime to have matching minute components.
+ */
+function validateMinuteAlignment(startTime: string, endTime: string): void {
+  const startMinute = startTime.split(":")[1] ?? "00";
+  const endMinute = endTime.split(":")[1] ?? "00";
+  if (startMinute !== endMinute) {
+    throw new Error(
+      `startTime and endTime must have matching minutes (got :${startMinute} vs :${endMinute}). ` +
+      `Tableau requires minute intervals to be similar for start and end times.`,
+    );
+  }
+}
+
+/**
  * Validate a ScheduleConfig before XML generation.
  */
 function validateSchedule(schedule: ScheduleConfig): void {
@@ -187,6 +203,7 @@ function validateSchedule(schedule: ScheduleConfig): void {
       if (!endTime) {
         throw new Error("Hourly frequency requires endTime");
       }
+      validateMinuteAlignment(startTime, endTime);
       break;
 
     case "Daily":
@@ -195,6 +212,9 @@ function validateSchedule(schedule: ScheduleConfig): void {
       }
       if ([2, 4, 6, 8, 12].includes(intervalHours) && !endTime) {
         throw new Error(`Daily frequency with intervalHours=${intervalHours} requires endTime`);
+      }
+      if (endTime) {
+        validateMinuteAlignment(startTime, endTime);
       }
       break;
 

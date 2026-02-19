@@ -54,7 +54,7 @@ describe("ScheduleEditor", () => {
     render(<ScheduleEditor value={dailySchedule} onChange={onChange} />);
 
     expect(screen.getByText("Frequency")).toBeInTheDocument();
-    expect(screen.getByText("Start Time")).toBeInTheDocument();
+    expect(screen.getByText("Start")).toBeInTheDocument();
     expect(screen.getByText("Save")).toBeInTheDocument();
   });
 
@@ -62,18 +62,18 @@ describe("ScheduleEditor", () => {
     const onChange = vi.fn();
     render(<ScheduleEditor value={hourlySchedule} onChange={onChange} />);
 
-    expect(screen.getByText("End Time")).toBeInTheDocument();
+    expect(screen.getByText("End")).toBeInTheDocument();
     expect(screen.getByText("Every 1 hour")).toBeInTheDocument();
   });
 
-  it("renders Weekly frequency with weekday checkboxes", () => {
+  it("renders Weekly frequency with weekday toggle buttons", () => {
     const onChange = vi.fn();
     render(<ScheduleEditor value={weeklySchedule} onChange={onChange} />);
 
     expect(screen.getByText("Days (at least 1)")).toBeInTheDocument();
-    expect(screen.getByText("Sun")).toBeInTheDocument();
-    expect(screen.getByText("Mon")).toBeInTheDocument();
-    expect(screen.getByText("Sat")).toBeInTheDocument();
+    expect(screen.getByText("Su")).toBeInTheDocument();
+    expect(screen.getByText("Mo")).toBeInTheDocument();
+    expect(screen.getByText("Sa")).toBeInTheDocument();
   });
 
   it("renders Monthly frequency with On Day and On Ordinal mode toggle", () => {
@@ -82,8 +82,8 @@ describe("ScheduleEditor", () => {
 
     expect(screen.getByText("On Day")).toBeInTheDocument();
     expect(screen.getByText("On Ordinal Weekday")).toBeInTheDocument();
-    expect(screen.getByText("Select Days")).toBeInTheDocument();
-    expect(screen.getByText("Last Day")).toBeInTheDocument();
+    // Monthly compact layout uses "Last" instead of "Last Day"
+    expect(screen.getByText("Last")).toBeInTheDocument();
   });
 
   it("toggles Monthly mode from Day to Ordinal", async () => {
@@ -108,14 +108,14 @@ describe("ScheduleEditor", () => {
     const onChange = vi.fn();
     render(<ScheduleEditor value={dailyWith4h} onChange={onChange} />);
 
-    expect(screen.getByText("End Time")).toBeInTheDocument();
+    expect(screen.getByText("End")).toBeInTheDocument();
   });
 
   it("hides end time for Daily with interval 24", () => {
     const onChange = vi.fn();
     render(<ScheduleEditor value={dailySchedule} onChange={onChange} />);
 
-    expect(screen.queryByText("End Time")).not.toBeInTheDocument();
+    expect(screen.queryByText("End")).not.toBeInTheDocument();
   });
 
   it("calls onChange with valid ScheduleConfig on submit", async () => {

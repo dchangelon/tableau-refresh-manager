@@ -109,16 +109,28 @@ describe("jsDayToHeatmapY", () => {
 });
 
 describe("formatScheduleSummary", () => {
-  it("formats Hourly schedule", () => {
-    expect(formatScheduleSummary("Hourly", "07:00")).toBe("Hourly (7 AM window)");
+  it("formats Hourly with endTime", () => {
+    expect(formatScheduleSummary("Hourly", "07:00", 1, [], "22:00")).toBe("Hourly 7 AM – 10 PM");
+  });
+
+  it("formats Hourly without endTime", () => {
+    expect(formatScheduleSummary("Hourly", "07:00")).toBe("Hourly 7 AM");
   });
 
   it("formats Daily every 24h", () => {
     expect(formatScheduleSummary("Daily", "08:00", 24)).toBe("Daily at 8 AM");
   });
 
-  it("formats Daily every 4h", () => {
-    expect(formatScheduleSummary("Daily", "08:00", 4)).toBe("Every 4h from 8 AM");
+  it("formats Daily every 24h with specific days", () => {
+    expect(formatScheduleSummary("Daily", "08:00", 24, ["Monday", "Wednesday"])).toBe("Daily at 8 AM Mon, Wed");
+  });
+
+  it("formats Daily every 4h with endTime", () => {
+    expect(formatScheduleSummary("Daily", "08:00", 4, [], "22:00")).toBe("Every 4h 8 AM – 10 PM");
+  });
+
+  it("formats Daily every 4h without endTime", () => {
+    expect(formatScheduleSummary("Daily", "08:00", 4)).toBe("Every 4h 8 AM");
   });
 
   it("formats Weekly with days", () => {
@@ -130,5 +142,10 @@ describe("formatScheduleSummary", () => {
 
   it("formats Monthly", () => {
     expect(formatScheduleSummary("Monthly", "06:00")).toBe("Monthly at 6 AM");
+  });
+
+  it("omits days label when all 7 days selected", () => {
+    const allDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    expect(formatScheduleSummary("Daily", "08:00", 24, allDays)).toBe("Daily at 8 AM");
   });
 });

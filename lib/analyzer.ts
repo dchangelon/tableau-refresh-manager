@@ -599,6 +599,15 @@ export function analyzeScheduledTasks(tasks: any[], timezone = "America/Chicago"
     if (isHourly) {
       runHours = expandHourlyRunHours(startTimeUtc, endTimeUtc, intervals);
       hourlyInterval = extractHourInterval(intervals);
+    } else if (frequency.toLowerCase() === "daily") {
+      // Daily schedules: extract interval from Tableau, default to 24 (once per day)
+      const extracted = extractHourInterval(intervals);
+      hourlyInterval = [2, 4, 6, 8, 12, 24].includes(extracted) ? extracted : 24;
+      if (hourlyInterval < 24 && endTimeUtc) {
+        runHours = expandHourlyRunHours(startTimeUtc, endTimeUtc, intervals);
+      } else {
+        runHours = [localHour];
+      }
     } else {
       runHours = [localHour];
     }

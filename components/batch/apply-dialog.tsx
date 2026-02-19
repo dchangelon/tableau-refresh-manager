@@ -137,6 +137,7 @@ export function ApplyDialog({ open, onOpenChange }: ApplyDialogProps) {
                           item.newSchedule.startTime,
                           item.newSchedule.intervalHours,
                           item.newSchedule.weekDays,
+                          item.newSchedule.endTime,
                         )}
                       </div>
                     </div>

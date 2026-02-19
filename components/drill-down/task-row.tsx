@@ -51,10 +51,8 @@ export function TaskRow({ task, onAddToPlan, isInPlan }: TaskRowProps) {
             task.schedule.frequency,
             task.schedule.startTime,
             task.schedule.intervalHours,
-            task.schedule.weekDays
-          )}
-          {task.hourlyWindow && (
-            <span className="ml-1">({task.hourlyWindow})</span>
+            task.schedule.weekDays,
+            task.schedule.endTime,
           )}
         </div>
 

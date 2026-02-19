@@ -120,7 +120,8 @@ export function TopRefreshers({ tasks, isLoading, hasActiveFilters }: TopRefresh
                     task.schedule.frequency,
                     task.schedule.startTime,
                     task.schedule.intervalHours,
-                    task.schedule.weekDays
+                    task.schedule.weekDays,
+                    task.schedule.endTime,
                   )}
                 </div>
                 {task.isHourly && task.hourlyWindow && (
