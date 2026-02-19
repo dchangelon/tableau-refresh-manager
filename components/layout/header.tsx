@@ -8,7 +8,9 @@ export function Header() {
   const { data, isLoading, error, dataUpdatedAt } = useRefreshData();
   const queryClient = useQueryClient();
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
+    // Bust the server-side unstable_cache first, then re-fetch client-side
+    await fetch("/api/revalidate", { method: "POST" }).catch(() => {});
     queryClient.invalidateQueries({ queryKey: ["refresh-data"] });
     queryClient.invalidateQueries({ queryKey: ["time-slots"] });
   };
