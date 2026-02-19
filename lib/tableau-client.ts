@@ -289,7 +289,7 @@ export class TableauClient {
 
         const resolved = {
           name: details?.name ?? `ID: ${itemId.slice(0, 8)}...`,
-          url: this.buildItemUrl(itemType, itemId),
+          url: (details?.webpageUrl as string) || this.buildItemUrl(itemType, itemId),
           project: (details?.project as Record<string, unknown>)?.name ?? "",
         };
 
