@@ -24,7 +24,8 @@ import { CACHE_REVALIDATE_SECONDS, DEFAULT_TIMEZONE } from "@/lib/constants";
 
 /** Exclusion rules (matches tableau-report-tracker/api/config/exceptions.json) */
 const EXCLUDED_FOLDERS = ["Prep Builder Flows", "Retire", "Archive", "Other", "Default"];
-const EXCLUDED_FOLDERS_EXACT = ["default", "Testing", "**Available Reports**"];
+const EXCLUDED_FOLDERS_EXACT = ["default", "Testing"];
+const EXCLUDED_PROJECT_IDS = new Set(["b9f122ec-cff6-4ac5-8f54-2bebc51dd2ce"]);
 
 interface ProjectNode {
   name: string;
@@ -93,6 +94,23 @@ function shouldExcludeByPath(projectPath: string): boolean {
 }
 
 /**
+ * Check if a task should be excluded based on its project ID (rename-proof).
+ * Walks up the ancestor chain so sub-projects are also excluded.
+ */
+function shouldExcludeByProjectId(
+  projectId: string,
+  projectMap: Map<string, ProjectNode>,
+): boolean {
+  if (!EXCLUDED_PROJECT_IDS.size || !projectId) return false;
+  let current: string | null = projectId;
+  while (current) {
+    if (EXCLUDED_PROJECT_IDS.has(current)) return true;
+    current = projectMap.get(current)?.parentId ?? null;
+  }
+  return false;
+}
+
+/**
  * Fetch and analyze Tableau extract refresh tasks.
  *
  * This function is wrapped with `unstable_cache` to provide:
@@ -121,11 +139,12 @@ const getCachedAnalysis = unstable_cache(
         projectMap,
       );
 
-      // Filter out tasks in excluded folders
+      // Filter out tasks in excluded folders/projects
       const filteredTasks = tasksWithDetails.filter((task) => {
         const resolved = task.resolved_item as Record<string, unknown> | undefined;
         const projectPath = (resolved?.projectPath as string) || "";
-        return !shouldExcludeByPath(projectPath);
+        const projectId = (resolved?.projectId as string) || "";
+        return !shouldExcludeByPath(projectPath) && !shouldExcludeByProjectId(projectId, projectMap);
       });
 
       // Resolve failure messages from job history (best-effort)

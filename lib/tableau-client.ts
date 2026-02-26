@@ -342,6 +342,7 @@ export class TableauClient {
           name: details?.name ?? `ID: ${itemId.slice(0, 8)}...`,
           url: (details?.webpageUrl as string) || this.buildItemUrl(itemType, itemId),
           project: projectName,
+          projectId: projectId ?? "",
           projectPath: projectInfo?.fullPath ?? projectName,
           topLevelProject: projectInfo?.topLevelName ?? projectName,
         };
