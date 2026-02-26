@@ -11,6 +11,10 @@ A Next.js application for analyzing and managing Tableau Cloud extract refresh s
 - **Batch Planning**: Queue schedule changes, preview impact, and apply to Tableau Cloud
 - **Error Summary** (Coming Soon): Categorized failure analysis with quick remediation
 
+## Why This Exists
+
+Tableau Cloud extract refreshes were piling up at the same times — 6 AM and midnight had 3x the load of other hours, causing failures and slow dashboards. There was no way to see the schedule distribution across all projects at once, and rescheduling meant clicking through each task one by one. This tool shows the full picture and lets you batch-reschedule in one shot.
+
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router) + TypeScript
@@ -150,21 +154,9 @@ Click any visualization to see the tasks scheduled at that time:
 
 The modal applies the current filter context (search/project/type) plus the time context (hour/day/date).
 
-## Current Status
+## Status
 
-**Completed** (Phases 1-8):
-- ✅ Full Tableau API integration (auth, fetch, caching, XML generation)
-- ✅ Dashboard UI with health cards, charts, heatmap, calendar
-- ✅ Cross-view filtering (project, type, search)
-- ✅ Drill-down modal with click-through from all charts
-- ✅ Batch planning drawer (add tasks, edit schedules, preview impact)
-- ✅ Apply changes endpoint with partial-failure handling + cache revalidation
-
-**Planned** (Phase 9-10):
-- 📋 Error summary with categorized failures
-- 📋 Polish, responsive design, production deployment
-
-See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for detailed roadmap.
+Phases 1-8 complete (API integration, dashboard, filtering, drill-down, batch planning). Error summary and responsive polish are planned. See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for details.
 
 ## Testing
 
@@ -184,12 +176,6 @@ vercel --prod
 ```
 
 **Post-deploy warm-up**: Call `GET /api/refresh-data` once after deploy to populate the cache (prevents 30-60s cold start for first user).
-
-## Contributing
-
-1. Run tests: `npm test`
-2. Run lint: `npm run lint`
-3. Ensure build succeeds: `npm run build`
 
 ## License
 
