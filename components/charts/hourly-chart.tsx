@@ -5,16 +5,11 @@ import { formatHour } from "@/lib/utils";
 import { CHART_COLORS, getHeatmapBlueHex } from "@/lib/constants";
 import type { RefreshTask } from "@/lib/types";
 import {
-  BarChart,
-  Bar,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  TooltipProvider,
   Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface HourlyChartProps {
   onHourClick?: (hour: number) => void;
@@ -29,13 +24,13 @@ export function HourlyChart({ onHourClick, tasks, height = 360 }: HourlyChartPro
   // Show loading state only when self-fetching
   if (!tasks && isLoading) {
     return (
-      <div className="h-80 space-y-3 animate-pulse p-4">
-        {Array.from({ length: 8 }, (_, i) => (
-          <div key={i} className="flex items-center gap-3">
-            <div className="w-10 h-3 bg-gray-200 rounded" />
+      <div className="space-y-1 animate-pulse" style={{ height }}>
+        {Array.from({ length: 24 }, (_, i) => (
+          <div key={i} className="flex items-center gap-2">
+            <div className="w-11 h-3 bg-gray-200 rounded" />
             <div
               className="h-3 bg-gray-200 rounded"
-              style={{ width: `${30 + Math.random() * 50}%` }}
+              style={{ width: `${10 + Math.random() * 60}%` }}
             />
           </div>
         ))}
@@ -48,7 +43,7 @@ export function HourlyChart({ onHourClick, tasks, height = 360 }: HourlyChartPro
 
   if (!sourceTasks) {
     return (
-      <div className="h-80 flex items-center justify-center text-gray-500">
+      <div className="flex items-center justify-center text-gray-500" style={{ height }}>
         No data available
       </div>
     );
@@ -79,98 +74,113 @@ export function HourlyChart({ onHourClick, tasks, height = 360 }: HourlyChartPro
     return {
       hour,
       hourLabel: formatHour(hour),
-      Fixed: fixedCount,
-      Moveable: moveableCount,
+      fixed: fixedCount,
+      moveable: moveableCount,
       total: totalCount,
     };
   });
   const maxTotal = Math.max(...chartData.map((d) => d.total), 1);
 
-  const handleBarClick = (data: { payload?: { hour?: number } }) => {
-    const hour = data?.payload?.hour;
-    if (hour !== undefined) {
-      onHourClick?.(hour);
-    }
-  };
-
   return (
-    <ResponsiveContainer width="100%" height={height}>
-      <BarChart
-        data={chartData}
-        layout="vertical"
-        margin={{ top: 8, right: 16, left: 4, bottom: 8 }}
-      >
-        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-        <XAxis
-          type="number"
-          tick={{ fontSize: 11 }}
-        />
-        <YAxis
-          dataKey="hourLabel"
-          type="category"
-          tick={{ fontSize: 10 }}
-          width={52}
-          interval={1}
-        />
-        <Tooltip
-          content={({ active, payload }) => {
-            if (!active || !payload || !payload.length) return null;
-            const data = payload[0].payload;
+    <TooltipProvider delayDuration={100}>
+      <div className="flex flex-col" style={{ height }}>
+        {/* Bar rows — grid ensures all 24 rows share the available height equally */}
+        <div className="flex-1 grid grid-rows-[repeat(24,1fr)] min-h-0 overflow-hidden">
+          {chartData.map((entry) => {
+            const moveableColor = getHeatmapBlueHex(entry.total, maxTotal);
+
             return (
-              <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
-                <p className="font-semibold mb-2">{data.hourLabel}</p>
-                <div className="space-y-1 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded"
-                      style={{ backgroundColor: CHART_COLORS.fixed }}
-                    />
-                    <span>Fixed (Hourly): {data.Fixed}</span>
+              <Tooltip key={entry.hour}>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onHourClick?.(entry.hour)}
+                    className="flex items-center gap-2 px-1 min-h-0 rounded hover:bg-gray-50 transition-colors cursor-pointer group"
+                  >
+                    {/* Hour label */}
+                    <span className="w-11 text-right text-[11px] text-gray-500 tabular-nums shrink-0">
+                      {entry.hourLabel}
+                    </span>
+
+                    {/* Bar + count together, width proportional to total */}
+                    <div className="flex-1 flex items-center gap-1.5 min-w-0">
+                      <div
+                        className="h-3 rounded overflow-hidden flex shrink-0"
+                        style={{ width: `${(entry.total / maxTotal) * 100}%` }}
+                      >
+                        {entry.fixed > 0 && (
+                          <div
+                            className="h-full"
+                            style={{
+                              width: `${(entry.fixed / entry.total) * 100}%`,
+                              backgroundColor: CHART_COLORS.fixed,
+                            }}
+                          />
+                        )}
+                        {entry.moveable > 0 && (
+                          <div
+                            className="h-full"
+                            style={{
+                              width: `${(entry.moveable / entry.total) * 100}%`,
+                              backgroundColor: moveableColor,
+                            }}
+                          />
+                        )}
+                      </div>
+                      <span className="text-[11px] font-medium text-gray-600 tabular-nums shrink-0 group-hover:text-gray-900">
+                        {entry.total || ""}
+                      </span>
+                    </div>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  sideOffset={8}
+                  className="bg-white border border-gray-200 rounded-lg shadow-md p-3 text-gray-900"
+                >
+                  <p className="font-semibold mb-2">{entry.hourLabel}</p>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded"
+                        style={{ backgroundColor: CHART_COLORS.fixed }}
+                      />
+                      <span>Fixed (Hourly): {entry.fixed}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded"
+                        style={{ backgroundColor: CHART_COLORS.moveable }}
+                      />
+                      <span>Moveable: {entry.moveable}</span>
+                    </div>
+                    <div className="border-t pt-1 mt-1">
+                      <strong>Total: {entry.total}</strong>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="w-3 h-3 rounded"
-                      style={{ backgroundColor: CHART_COLORS.moveable }}
-                    />
-                    <span>Moveable: {data.Moveable}</span>
-                  </div>
-                  <div className="border-t pt-1 mt-1">
-                    <strong>Total: {data.total}</strong>
-                  </div>
-                </div>
-              </div>
+                </TooltipContent>
+              </Tooltip>
             );
-          }}
-        />
-        <Legend
-          wrapperStyle={{ paddingTop: "20px" }}
-          iconType="rect"
-          formatter={(value) => {
-            if (value === "Fixed") return "Fixed (Hourly)";
-            return value;
-          }}
-        />
-        <Bar
-          dataKey="Fixed"
-          stackId="a"
-          fill={CHART_COLORS.fixed}
-          cursor="pointer"
-          barSize={10}
-          onClick={handleBarClick}
-        />
-        <Bar
-          dataKey="Moveable"
-          stackId="a"
-          fill={CHART_COLORS.moveable}
-          cursor="pointer"
-          barSize={10}
-          onClick={handleBarClick}
-        >
-          {chartData.map((entry) => (
-            <Cell key={`moveable-${entry.hour}`} fill={getHeatmapBlueHex(entry.total, maxTotal)} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+          })}
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-4 text-xs text-gray-600 pt-2 mt-2 border-t shrink-0">
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-3 h-3 rounded"
+              style={{ backgroundColor: CHART_COLORS.fixed }}
+            />
+            <span>Fixed (Hourly)</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-3 h-3 rounded"
+              style={{ backgroundColor: CHART_COLORS.moveable }}
+            />
+            <span>Moveable</span>
+          </div>
+        </div>
+      </div>
+    </TooltipProvider>
   );
 }

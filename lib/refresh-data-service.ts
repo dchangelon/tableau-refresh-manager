@@ -20,6 +20,78 @@ import { analyzeScheduledTasks } from "@/lib/analyzer";
 import type { AnalysisResponse } from "@/lib/types";
 import { CACHE_REVALIDATE_SECONDS, DEFAULT_TIMEZONE } from "@/lib/constants";
 
+// --- Project hierarchy helpers ---
+
+/** Exclusion rules (matches tableau-report-tracker/api/config/exceptions.json) */
+const EXCLUDED_FOLDERS = ["Prep Builder Flows", "Retire", "Archive", "Other", "Default"];
+const EXCLUDED_FOLDERS_EXACT = ["default", "Testing", "**Available Reports**"];
+
+interface ProjectNode {
+  name: string;
+  parentId: string | null;
+  fullPath: string;
+  topLevelName: string;
+}
+
+/**
+ * Build a project hierarchy map from raw Tableau projects.
+ * Resolves full paths and top-level ancestor for each project.
+ */
+function buildProjectMap(
+  rawProjects: Array<{ id: string; name: string; parentProjectId: string | null }>,
+): Map<string, ProjectNode> {
+  const map = new Map<string, ProjectNode>();
+
+  for (const p of rawProjects) {
+    map.set(p.id, { name: p.name, parentId: p.parentProjectId, fullPath: "", topLevelName: "" });
+  }
+
+  // Recursive path builder (memoized via fullPath)
+  function resolve(id: string): { fullPath: string; topLevelName: string } {
+    const node = map.get(id);
+    if (!node) return { fullPath: "Unknown", topLevelName: "Unknown" };
+    if (node.fullPath) return { fullPath: node.fullPath, topLevelName: node.topLevelName };
+
+    if (node.parentId && map.has(node.parentId)) {
+      const parent = resolve(node.parentId);
+      node.fullPath = `${parent.fullPath}/${node.name}`;
+      node.topLevelName = parent.topLevelName;
+    } else {
+      node.fullPath = node.name;
+      node.topLevelName = node.name;
+    }
+
+    return { fullPath: node.fullPath, topLevelName: node.topLevelName };
+  }
+
+  for (const id of map.keys()) {
+    resolve(id);
+  }
+
+  return map;
+}
+
+/**
+ * Check if a task should be excluded based on its project path.
+ */
+function shouldExcludeByPath(projectPath: string): boolean {
+  const segments = projectPath.split("/");
+
+  // Substring match per segment (e.g., "Archive" matches "Archive_2025")
+  for (const pattern of EXCLUDED_FOLDERS) {
+    for (const segment of segments) {
+      if (segment.includes(pattern)) return true;
+    }
+  }
+
+  // Exact segment match
+  for (const exact of EXCLUDED_FOLDERS_EXACT) {
+    if (segments.includes(exact)) return true;
+  }
+
+  return false;
+}
+
 /**
  * Fetch and analyze Tableau extract refresh tasks.
  *
@@ -36,14 +108,28 @@ const getCachedAnalysis = unstable_cache(
     await client.signIn();
 
     try {
+      // Fetch project hierarchy and build map
+      const rawProjects = await client.getProjects();
+      const projectMap = buildProjectMap(rawProjects);
+
       // Fetch tasks
       const tasks = await client.getExtractRefreshTasks();
 
-      // Resolve workbook/datasource details (names, URLs, projects)
-      const tasksWithDetails = await client.resolveItemDetails(tasks as Record<string, unknown>[]);
+      // Resolve workbook/datasource details (names, URLs, projects, hierarchy)
+      const tasksWithDetails = await client.resolveItemDetails(
+        tasks as Record<string, unknown>[],
+        projectMap,
+      );
+
+      // Filter out tasks in excluded folders
+      const filteredTasks = tasksWithDetails.filter((task) => {
+        const resolved = task.resolved_item as Record<string, unknown> | undefined;
+        const projectPath = (resolved?.projectPath as string) || "";
+        return !shouldExcludeByPath(projectPath);
+      });
 
       // Resolve failure messages from job history (best-effort)
-      const tasksWithFailures = await client.resolveFailureMessages(tasksWithDetails);
+      const tasksWithFailures = await client.resolveFailureMessages(filteredTasks);
 
       // Run analysis
       const analysis = analyzeScheduledTasks(tasksWithFailures, timezone);

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { RefreshTask } from "@/lib/types";
 import { formatScheduleSummary } from "@/lib/utils";
+import { BarChart3, Check, ChevronDown, ChevronUp, Plus } from "lucide-react";
 
 interface TopRefreshersProps {
   tasks: RefreshTask[];
@@ -33,14 +34,26 @@ export function TopRefreshers({ tasks, isLoading, hasActiveFilters }: TopRefresh
 
   if (isLoading) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-2">
         {Array.from({ length: 5 }, (_, i) => (
-          <div key={i} className="animate-pulse flex items-center gap-4 p-4 bg-gray-50 rounded">
-            <div className="flex-1">
-              <div className="h-4 bg-gray-200 rounded w-1/3 mb-2" />
-              <div className="h-3 bg-gray-200 rounded w-1/4" />
+          <div
+            key={i}
+            className="animate-pulse rounded-lg border border-gray-200 border-l-[3px] border-l-gray-200 bg-white px-3 py-2.5 shadow-sm"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="h-5 w-8 rounded-full bg-gray-200" />
+                <div className="h-4 w-40 rounded bg-gray-200" />
+              </div>
+              <div className="h-5 w-20 rounded-full bg-gray-200" />
             </div>
-            <div className="h-8 bg-gray-200 rounded w-20" />
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <div className="h-3 w-24 rounded bg-gray-100" />
+              <div className="h-3 w-32 rounded bg-gray-100" />
+            </div>
+            <div className="mt-1.5 flex items-center justify-end">
+              <div className="h-6 w-16 rounded-md bg-gray-200" />
+            </div>
           </div>
         ))}
       </div>
@@ -49,8 +62,18 @@ export function TopRefreshers({ tasks, isLoading, hasActiveFilters }: TopRefresh
 
   if (topTasks.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        {hasActiveFilters ? "No tasks match your filters" : "No tasks available"}
+      <div className="text-center py-16 bg-gradient-to-b from-gray-50 to-white rounded-lg border border-gray-100">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+          <BarChart3 className="w-8 h-8 text-gray-400" />
+        </div>
+        <p className="text-gray-600 font-medium">
+          {hasActiveFilters ? "No tasks match your filters" : "No tasks available"}
+        </p>
+        <p className="text-gray-500 text-sm mt-2 max-w-xs mx-auto">
+          {hasActiveFilters
+            ? "Try adjusting your filter criteria"
+            : "Refresh data will appear here once loaded"}
+        </p>
       </div>
     );
   }
@@ -59,149 +82,116 @@ export function TopRefreshers({ tasks, isLoading, hasActiveFilters }: TopRefresh
   const isInPlan = isTaskInPlan;
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full">
-        <thead className="border-b border-gray-200">
-          <tr className="text-left text-sm font-semibold text-gray-700">
-            <th className="pb-3 pr-4">Name</th>
-            <th className="pb-3 pr-4">Project</th>
-            <th className="pb-3 pr-4 text-center">Slots/Week</th>
-            <th className="pb-3 pr-4">Schedule</th>
-            <th className="pb-3 pr-4 text-center">Failures</th>
-            <th className="pb-3 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {visibleTasks.map((task) => (
-            <tr
-              key={task.id}
-              className="text-sm hover:bg-gray-50 transition-colors"
-            >
-              {/* Name */}
-              <td className="py-3 pr-4">
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant={task.type === "workbook" ? "default" : "secondary"}
-                    className="text-xs"
-                  >
-                    {task.type === "workbook" ? "WB" : "DS"}
-                  </Badge>
-                  {task.itemUrl ? (
-                    <a
-                      href={task.itemUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline font-medium"
-                    >
-                      {task.itemName}
-                    </a>
-                  ) : (
-                    <span className="font-medium text-gray-900">
-                      {task.itemName}
-                    </span>
-                  )}
-                </div>
-              </td>
-
-              {/* Project */}
-              <td className="py-3 pr-4 text-gray-600">{task.projectName}</td>
-
-              {/* Slots/Week */}
-              <td className="py-3 pr-4 text-center">
-                <span className="font-semibold text-gray-900">
-                  {task.slotsPerWeek}
-                </span>
-              </td>
-
-              {/* Schedule */}
-              <td className="py-3 pr-4">
-                <div className="text-gray-700">
-                  {formatScheduleSummary(
-                    task.schedule.frequency,
-                    task.schedule.startTime,
-                    task.schedule.intervalHours,
-                    task.schedule.weekDays,
-                    task.schedule.endTime,
-                  )}
-                </div>
-                {task.isHourly && task.hourlyWindow && (
-                  <div className="text-xs text-gray-500 mt-0.5">
-                    {task.hourlyWindow}
-                  </div>
-                )}
-              </td>
-
-              {/* Failures */}
-              <td className="py-3 pr-4 text-center">
-                {task.consecutiveFailures > 0 ? (
-                  <Badge variant="destructive">
-                    {task.consecutiveFailures}
-                  </Badge>
-                ) : (
-                  <span className="text-gray-400">-</span>
-                )}
-              </td>
-
-              {/* Actions */}
-              <td className="py-3 text-right">
-                <Button
-                  size="sm"
-                  variant={isInPlan(task.id) ? "outline" : "default"}
-                  onClick={() => handleAddToPlan(task)}
-                  disabled={isInPlan(task.id)}
-                  className="gap-1"
+    <div className="space-y-2">
+      {visibleTasks.map((task) => (
+        <div
+          key={task.id}
+          className={`rounded-lg border border-gray-200 border-l-[3px] bg-white px-3 py-2.5 shadow-sm transition-all duration-200 hover:shadow-md hover:border-blue-300 ${
+            task.type === "workbook" ? "border-l-blue-500" : "border-l-gray-400"
+          }`}
+        >
+          {/* Row 1: Type badge + name (linked) + slots/week pill */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Badge
+                variant={task.type === "workbook" ? "default" : "secondary"}
+                className="text-xs shrink-0"
+              >
+                {task.type === "workbook" ? "WB" : "DS"}
+              </Badge>
+              {task.itemUrl ? (
+                <a
+                  href={task.itemUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-semibold leading-snug text-blue-600 hover:underline truncate"
                 >
-                  {isInPlan(task.id) ? (
-                    <>
-                      <svg
-                        className="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      In Plan
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4v16m8-8H4"
-                        />
-                      </svg>
-                      Add to Plan
-                    </>
-                  )}
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  {task.itemName}
+                </a>
+              ) : (
+                <span className="text-sm font-semibold leading-snug text-gray-900 truncate">
+                  {task.itemName}
+                </span>
+              )}
+            </div>
+            <span className="shrink-0 inline-flex items-center rounded-full bg-blue-50 text-blue-700 px-2 py-0.5 text-[11px] font-medium tabular-nums">
+              {task.slotsPerWeek} slots/wk
+            </span>
+          </div>
 
-      {hasMore && (
-        <div className="mt-4 text-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setExpanded(!expanded)}
-            className="text-gray-600 hover:text-gray-900"
-          >
-            {expanded ? "Show less" : `Show all ${topTasks.length}`}
-          </Button>
+          {/* Row 2: Project name + schedule summary */}
+          <div className="mt-1 flex items-center gap-1.5 text-xs text-gray-500">
+            <span className="truncate">{task.projectName}</span>
+            <span className="text-gray-300">&middot;</span>
+            <span className="truncate">
+              {formatScheduleSummary(
+                task.schedule.frequency,
+                task.schedule.startTime,
+                task.schedule.intervalHours,
+                task.schedule.weekDays,
+                task.schedule.endTime,
+              )}
+            </span>
+            {task.isHourly && task.hourlyWindow && (
+              <>
+                <span className="text-gray-300">&middot;</span>
+                <span className="shrink-0">{task.hourlyWindow}</span>
+              </>
+            )}
+          </div>
+
+          {/* Row 3: Failure badge (if any) + Add to Plan button */}
+          <div className="mt-1.5 flex items-center justify-between gap-2">
+            <div>
+              {task.consecutiveFailures > 0 && (
+                <Badge variant="destructive" className="text-xs">
+                  {task.consecutiveFailures} {task.consecutiveFailures === 1 ? "failure" : "failures"}
+                </Badge>
+              )}
+            </div>
+            <Button
+              size="sm"
+              variant={isInPlan(task.id) ? "outline" : "default"}
+              onClick={() => handleAddToPlan(task)}
+              disabled={isInPlan(task.id)}
+              className="gap-1"
+            >
+              {isInPlan(task.id) ? (
+                <>
+                  <Check className="size-3.5" />
+                  In Plan
+                </>
+              ) : (
+                <>
+                  <Plus className="size-3.5" />
+                  Add
+                </>
+              )}
+            </Button>
+          </div>
         </div>
+      ))}
+
+      {/* Expand/collapse toggle */}
+      {hasMore && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full text-gray-600 hover:text-gray-900"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? (
+            <>
+              <ChevronUp className="mr-1 h-4 w-4" />
+              Show less
+            </>
+          ) : (
+            <>
+              <ChevronDown className="mr-1 h-4 w-4" />
+              Show all {topTasks.length}
+            </>
+          )}
+        </Button>
       )}
     </div>
   );

@@ -7,6 +7,8 @@ export interface RefreshTask {
   itemName: string;
   itemUrl: string | null; // Link to item on Tableau Cloud
   projectName: string;
+  projectPath: string; // Full hierarchy path (e.g., "1. Academic Reports/Surveys")
+  topLevelProject: string; // Root ancestor folder name
   schedule: ScheduleConfig;
   consecutiveFailures: number;
   lastFailureMessage: string | null; // From jobs/history endpoint when available

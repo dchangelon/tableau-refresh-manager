@@ -7,7 +7,7 @@ import type { RefreshTask } from "@/lib/types";
 
 function HealthCardSkeleton() {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 animate-pulse">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 animate-pulse">
       <div className="h-4 bg-gray-200 rounded w-1/2 mb-3" />
       <div className="h-8 bg-gray-200 rounded w-3/4 mb-2" />
       <div className="h-3 bg-gray-200 rounded w-1/3" />
@@ -23,10 +23,10 @@ interface HealthCardProps {
 }
 
 function HealthCard({ title, value, subtitle, health }: HealthCardProps) {
-  const healthColors = {
-    green: "bg-green-50 border-green-200",
-    yellow: "bg-yellow-50 border-yellow-200",
-    red: "bg-red-50 border-red-200",
+  const healthBorders = {
+    green: "border-l-green-500",
+    yellow: "border-l-yellow-500",
+    red: "border-l-red-500",
   };
 
   const healthDots = {
@@ -38,8 +38,8 @@ function HealthCard({ title, value, subtitle, health }: HealthCardProps) {
   return (
     <div
       className={cn(
-        "rounded-lg shadow-md p-6 border-2 transition-colors",
-        healthColors[health]
+        "bg-white rounded-lg border border-gray-200 shadow-sm p-6 border-l-4 transition-all duration-200 hover:shadow-md hover:border-blue-300",
+        healthBorders[health]
       )}
     >
       <div className="flex items-center gap-2 mb-2">

@@ -41,17 +41,18 @@ export function taskMatchesFilters(
   project: string | null,
   type: "all" | "workbook" | "datasource"
 ): boolean {
-  // Search filter - matches item name or project name
+  // Search filter - matches item name, project name, or top-level project
   if (search) {
     const searchLower = search.toLowerCase();
     const matchesSearch =
       task.itemName.toLowerCase().includes(searchLower) ||
-      task.projectName.toLowerCase().includes(searchLower);
+      task.projectName.toLowerCase().includes(searchLower) ||
+      task.topLevelProject.toLowerCase().includes(searchLower);
     if (!matchesSearch) return false;
   }
 
-  // Project filter
-  if (project && task.projectName !== project) {
+  // Project filter (matches top-level folder)
+  if (project && task.topLevelProject !== project) {
     return false;
   }
 

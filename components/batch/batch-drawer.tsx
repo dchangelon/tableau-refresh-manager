@@ -162,7 +162,7 @@ export function BatchDrawer() {
   return (
     <>
       <div
-        className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-[0_-4px_16px_rgba(0,0,0,0.08)] transition-all duration-300 ease-in-out ${
+        className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] transition-all duration-300 ease-in-out ${
           isExpanded ? drawerHeight : "h-14"
         }`}
       >

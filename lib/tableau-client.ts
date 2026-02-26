@@ -237,6 +237,48 @@ export class TableauClient {
   }
 
   /**
+   * Fetch all projects (paginated) for hierarchy resolution.
+   */
+  async getProjects(): Promise<Array<{ id: string; name: string; parentProjectId: string | null }>> {
+    const allProjects: Array<{ id: string; name: string; parentProjectId: string | null }> = [];
+    let pageNumber = 1;
+    const pageSize = 1000;
+
+    while (true) {
+      const response = await this.makeRequest<PaginatedResponse<unknown>>(
+        "projects",
+        { pageSize, pageNumber },
+      );
+
+      let projects = (response.projects as Record<string, unknown>)?.project;
+      if (!projects) break;
+
+      if (!Array.isArray(projects)) {
+        projects = [projects];
+      }
+
+      for (const p of projects as Array<Record<string, unknown>>) {
+        allProjects.push({
+          id: p.id as string,
+          name: p.name as string,
+          parentProjectId: (p.parentProjectId as string) ?? null,
+        });
+      }
+
+      const pagination = response.pagination;
+      if (!pagination) break;
+
+      const total = parseInt(pagination.totalAvailable, 10);
+      const fetched = pageNumber * pageSize;
+      if (fetched >= total) break;
+
+      pageNumber++;
+    }
+
+    return allProjects;
+  }
+
+  /**
    * Resolve workbook details by ID.
    */
   async getWorkbookDetails(workbookId: string): Promise<Record<string, unknown> | null> {
@@ -267,8 +309,12 @@ export class TableauClient {
   /**
    * Resolve item details (name, URL, project) for all tasks.
    * Returns tasks with `resolved_item` field injected.
+   * When projectMap is provided, also resolves projectPath and topLevelProject.
    */
-  async resolveItemDetails(tasks: Record<string, unknown>[]): Promise<Record<string, unknown>[]> {
+  async resolveItemDetails(
+    tasks: Record<string, unknown>[],
+    projectMap?: Map<string, { name: string; fullPath: string; topLevelName: string }>,
+  ): Promise<Record<string, unknown>[]> {
     const enriched = await Promise.all(
       tasks.map(async (task) => {
         const extractRefresh = task.extractRefresh as Record<string, unknown> | undefined;
@@ -287,10 +333,17 @@ export class TableauClient {
             ? await this.getWorkbookDetails(itemId)
             : await this.getDatasourceDetails(itemId);
 
+        const projectObj = details?.project as Record<string, unknown> | undefined;
+        const projectId = projectObj?.id as string | undefined;
+        const projectName = (projectObj?.name as string) ?? "";
+        const projectInfo = projectId && projectMap ? projectMap.get(projectId) : undefined;
+
         const resolved = {
           name: details?.name ?? `ID: ${itemId.slice(0, 8)}...`,
           url: (details?.webpageUrl as string) || this.buildItemUrl(itemType, itemId),
-          project: (details?.project as Record<string, unknown>)?.name ?? "",
+          project: projectName,
+          projectPath: projectInfo?.fullPath ?? projectName,
+          topLevelProject: projectInfo?.topLevelName ?? projectName,
         };
 
         return { ...task, resolved_item: resolved };

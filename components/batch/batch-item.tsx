@@ -44,7 +44,7 @@ export function BatchItem({ item, selected, onToggleSelect, onRemove, onUpdateSc
 
   return (
     <div
-      className={`p-3 rounded-lg border transition-colors ${
+      className={`p-3 rounded-lg border shadow-sm transition-colors ${
         selected
           ? "border-blue-300 bg-blue-50/70 ring-1 ring-blue-200"
           : hasChanged

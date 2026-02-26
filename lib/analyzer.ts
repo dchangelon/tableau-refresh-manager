@@ -639,6 +639,8 @@ export function analyzeScheduledTasks(tasks: any[], timezone = "America/Chicago"
       item_name: resolved.name || (itemId ? `ID: ${itemId.slice(0, 8)}...` : "Unknown"),
       item_url: resolved.url || "",
       project_name: resolved.project || "",
+      project_path: resolved.projectPath || resolved.project || "",
+      top_level_project: resolved.topLevelProject || resolved.project || "",
       hour: localHour,
       hour_formatted: formatHour(localHour),
       days: runDays.map((d: number) => FULL_DAY_NAMES[d]),
@@ -726,6 +728,8 @@ export function analyzeScheduledTasks(tasks: any[], timezone = "America/Chicago"
     itemName: t.item_name,
     itemUrl: t.item_url,
     projectName: t.project_name,
+    projectPath: t.project_path,
+    topLevelProject: t.top_level_project,
     schedule: {
       frequency: t.schedule_frequency,
       startTime: t.schedule_start_utc,
@@ -753,6 +757,8 @@ export function analyzeScheduledTasks(tasks: any[], timezone = "America/Chicago"
     itemName: t.item_name,
     itemUrl: t.item_url,
     projectName: t.project_name,
+    projectPath: t.project_path,
+    topLevelProject: t.top_level_project,
     schedule: {
       frequency: t.schedule_frequency,
       startTime: t.schedule_start_utc,
@@ -782,6 +788,8 @@ export function analyzeScheduledTasks(tasks: any[], timezone = "America/Chicago"
       itemName: t.item_name,
       itemUrl: t.item_url,
       projectName: t.project_name,
+      projectPath: t.project_path,
+      topLevelProject: t.top_level_project,
       schedule: {
         frequency: t.schedule_frequency,
         startTime: t.schedule_start_utc,

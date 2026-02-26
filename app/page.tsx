@@ -102,7 +102,7 @@ export default function DashboardPage() {
         {/* Analytics Row: stack on smaller screens, side-by-side on wide screens */}
         <ErrorBoundary fallbackMessage="Chart failed to render.">
           <section className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-            <div className="bg-white rounded-lg shadow-md p-6 xl:col-span-4 2xl:col-span-5">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 xl:col-span-4 2xl:col-span-5">
               <h2 className="text-lg font-semibold mb-4">Hourly Distribution</h2>
               <HourlyChart
                 tasks={filteredTasks}
@@ -111,7 +111,7 @@ export default function DashboardPage() {
               />
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 xl:col-span-8 2xl:col-span-7">
+            <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 xl:col-span-8 2xl:col-span-7">
               <h2 className="text-lg font-semibold mb-4">Schedule Heatmap</h2>
               <Heatmap
                 tasks={filteredTasks}
@@ -122,21 +122,22 @@ export default function DashboardPage() {
           </section>
         </ErrorBoundary>
 
-        {/* Top Refreshers Table */}
-        <section className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-lg font-semibold mb-4">Top Refreshers</h2>
-          <TopRefreshers
+        {/* Top Refreshers + Error Summary side-by-side */}
+        <section className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+            <h2 className="text-lg font-semibold mb-4">Top Refreshers</h2>
+            <TopRefreshers
+              tasks={filteredTasks}
+              isLoading={isLoading}
+              hasActiveFilters={hasActiveFilters}
+            />
+          </div>
+          <ErrorSummary
             tasks={filteredTasks}
-            isLoading={isLoading}
-            hasActiveFilters={hasActiveFilters}
+            onAddToPlan={handleAddToPlan}
+            isInPlan={isTaskInPlan}
           />
         </section>
-        {/* Error Summary */}
-        <ErrorSummary
-          tasks={filteredTasks}
-          onAddToPlan={handleAddToPlan}
-          isInPlan={isTaskInPlan}
-        />
       </main>
 
       <HourModal

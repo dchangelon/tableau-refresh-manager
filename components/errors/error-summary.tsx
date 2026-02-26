@@ -4,12 +4,6 @@ import { useMemo, useState } from "react";
 import { TaskRow } from "@/components/drill-down/task-row";
 import { Badge } from "@/components/ui/badge";
 import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
-import {
   categorizeError,
   ERROR_BUCKET_ORDER,
   ERROR_BUCKET_LABELS,
@@ -23,7 +17,7 @@ import {
   DatabaseZap,
   CircleAlert,
   ChevronDown,
-  ChevronUp,
+  ChevronRight,
 } from "lucide-react";
 
 const BUCKET_ICONS: Record<ErrorBucketKey, React.ElementType> = {
@@ -34,6 +28,14 @@ const BUCKET_ICONS: Record<ErrorBucketKey, React.ElementType> = {
   other: CircleAlert,
 };
 
+const BUCKET_DOT_COLORS: Record<ErrorBucketKey, string> = {
+  connection: "bg-red-500",
+  timeout: "bg-amber-500",
+  permission: "bg-purple-500",
+  "data source unavailable": "bg-orange-500",
+  other: "bg-gray-400",
+};
+
 interface ErrorSummaryProps {
   tasks: RefreshTask[];
   onAddToPlan?: (task: RefreshTask) => void;
@@ -41,8 +43,6 @@ interface ErrorSummaryProps {
 }
 
 export function ErrorSummary({ tasks, onAddToPlan, isInPlan }: ErrorSummaryProps) {
-  const [isCollapsed, setIsCollapsed] = useState(true);
-
   const { buckets, totalFailing } = useMemo(() => {
     const failingTasks = tasks.filter((t) => t.consecutiveFailures > 0);
     const grouped = new Map<ErrorBucketKey, RefreshTask[]>();
@@ -67,67 +67,76 @@ export function ErrorSummary({ tasks, onAddToPlan, isInPlan }: ErrorSummaryProps
     return { buckets: orderedBuckets, totalFailing: failingTasks.length };
   }, [tasks]);
 
+  // Per-bucket expand/collapse — all collapsed by default
+  const [expandedBuckets, setExpandedBuckets] = useState<Record<string, boolean>>({});
+
+  function isBucketExpanded(key: ErrorBucketKey): boolean {
+    return expandedBuckets[key] ?? false;
+  }
+
+  function toggleBucket(key: ErrorBucketKey) {
+    setExpandedBuckets((prev) => ({
+      ...prev,
+      [key]: !(prev[key] ?? false),
+    }));
+  }
+
   if (totalFailing === 0) return null;
 
   return (
-    <section className="bg-white rounded-lg shadow-md p-6">
-      {/* Header */}
-      <button
-        onClick={() => setIsCollapsed((prev) => !prev)}
-        className="flex items-center gap-3 w-full text-left"
-      >
+    <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      {/* Header — always visible */}
+      <div className="flex items-center gap-3 mb-4">
         <h2 className="text-lg font-semibold">Error Summary</h2>
         <Badge variant="destructive">{totalFailing}</Badge>
-        <span className="ml-auto text-muted-foreground">
-          {isCollapsed ? (
-            <ChevronDown className="size-5" />
-          ) : (
-            <ChevronUp className="size-5" />
-          )}
-        </span>
-      </button>
+      </div>
 
-      {/* Collapsible content */}
-      {!isCollapsed && (
-        <div className="mt-4">
-          <Accordion
-            type="multiple"
-            defaultValue={buckets.map((b) => b.key)}
-          >
-            {buckets.map(({ key, tasks: bucketTasks, label, Icon }) => (
-              <AccordionItem key={key} value={key}>
-                <AccordionTrigger>
-                  <div className="flex items-center gap-2">
-                    <Icon className="size-4 text-muted-foreground" />
-                    <span>{label}</span>
-                    <Badge variant="outline" className="ml-1">
-                      {bucketTasks.length}
-                    </Badge>
-                  </div>
-                </AccordionTrigger>
-                <AccordionContent>
+      {/* Bucket sections */}
+      <div className="space-y-3">
+        {buckets.map(({ key, tasks: bucketTasks, label, Icon }) => {
+          const isExpanded = isBucketExpanded(key);
+          const dotColor = BUCKET_DOT_COLORS[key];
+
+          return (
+            <div key={key} className="rounded-lg border bg-card">
+              {/* Bucket header */}
+              <button
+                onClick={() => toggleBucket(key)}
+                className="flex w-full items-center gap-2 px-4 py-3 text-left hover:bg-muted/50 transition-colors rounded-lg"
+              >
+                {isExpanded ? (
+                  <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                )}
+                <span className={`h-2.5 w-2.5 rounded-full shrink-0 ${dotColor}`} />
+                <Icon className="size-4 text-muted-foreground shrink-0" />
+                <span className="font-semibold text-sm">{label}</span>
+                <Badge variant="secondary" className="text-xs">
+                  {bucketTasks.length}
+                </Badge>
+              </button>
+
+              {/* Bucket content */}
+              {isExpanded && (
+                <div className="px-4 pb-3">
                   <div className="divide-y">
                     {bucketTasks.map((task) => (
-                      <div key={task.id}>
-                        <TaskRow
-                          task={task}
-                          onAddToPlan={onAddToPlan}
-                          isInPlan={isInPlan}
-                        />
-                        {key === "other" && !task.lastFailureMessage && (
-                          <p className="text-xs text-muted-foreground pl-9 pb-2">
-                            No failure message returned by Tableau
-                          </p>
-                        )}
-                      </div>
+                      <TaskRow
+                        key={task.id}
+                        task={task}
+                        onAddToPlan={onAddToPlan}
+                        isInPlan={isInPlan}
+                        compact
+                      />
                     ))}
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </div>
-      )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }

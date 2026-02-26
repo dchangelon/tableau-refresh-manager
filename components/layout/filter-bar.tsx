@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SEARCH_DEBOUNCE_MS } from "@/lib/constants";
+import { Search, XCircle } from "lucide-react";
 
 export function FilterBar() {
   const { data } = useRefreshData();
@@ -30,32 +31,20 @@ export function FilterBar() {
     return () => clearTimeout(timer);
   }, [searchInput, setSearch]);
 
-  // Extract unique projects from data
+  // Extract unique top-level folders from data
   const projects = data
-    ? Array.from(new Set(data.tasks.details.map((task) => task.projectName))).sort()
+    ? Array.from(new Set(data.tasks.details.map((task) => task.topLevelProject))).sort()
     : [];
 
   const hasActiveFilters = search || project || type !== "all";
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Search Input */}
         <div className="flex-1 min-w-0">
           <div className="relative">
-            <svg
-              className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
               type="text"
               placeholder="Search tasks or projects..."
@@ -71,13 +60,7 @@ export function FilterBar() {
                 }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <XCircle className="w-4 h-4" />
               </button>
             )}
           </div>
@@ -87,10 +70,10 @@ export function FilterBar() {
         <div className="w-full sm:w-64">
           <Select value={project ?? "all"} onValueChange={(val) => setProject(val === "all" ? null : val)}>
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="All Projects" />
+              <SelectValue placeholder="All Folders" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Projects</SelectItem>
+              <SelectItem value="all">All Folders</SelectItem>
               {projects.map((proj) => (
                 <SelectItem key={proj} value={proj}>
                   {proj}
